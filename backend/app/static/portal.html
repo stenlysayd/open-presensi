@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Mandiri - Open Presensi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1F497D;
+      --primary-dark: #153358;
+      --accent: #27AE60;
+      --bg: #F4F6F9;
+      --card-bg: #FFFFFF;
+      --text: #2C3E50;
+      --text-muted: #7F8C8D;
+      --border: #E2E8F0;
+      --danger: #E74C3C;
+      --warning: #F39C12;
+      --radius: 12px;
+      --shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 40px;
+    }
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, #2C3E50 100%);
+      color: white;
+      padding: 32px 20px 48px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .container {
+      max-width: 680px;
+      margin: -24px auto 0;
+      padding: 0 16px;
+    }
+    .tabs {
+      display: flex;
+      background: white;
+      border-radius: var(--radius);
+      padding: 6px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(31,73,125,0.25);
+    }
+    .tab-panel {
+      display: none;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .tab-panel.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #34495E;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: #FAFAFC;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 520px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .alert {
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-top: 16px;
+      display: none;
+    }
+    .alert-success {
+      background: #E8F8F5;
+      color: #117A65;
+      border: 1px solid #A3E4D7;
+    }
+    .alert-danger {
+      background: #FDEDEC;
+      color: #C0392B;
+      border: 1px solid #FADBD8;
+    }
+    /* Attendance Results */
+    .profile-box {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .profile-info h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .profile-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .badge-count {
+      background: var(--primary);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: #F1F5F9;
+      font-weight: 700;
+      color: #475569;
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-hadir { background: #E8F8F5; color: #27AE60; }
+    .status-terlambat { background: #FEF9E7; color: #F39C12; }
+    .status-izin { background: #EBF5FB; color: #2980B9; }
+    .status-sakit { background: #F4ECF7; color: #8E44AD; }
+    .status-alpa { background: #FDEDEC; color: #C0392B; }
+    .footer-credit {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 32px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <h1>Open Presensi</h1>
+    <p>Portal Layanan Mandiri Siswa, Orang Tua & Jemaat</p>
+  </header>
+
+  <main class="container">
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('izin')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Pengajuan Izin
+      </button>
+      <button class="tab-btn" onclick="switchTab('cek')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Cek Riwayat
+      </button>
+    </div>
+
+    <!-- Panel 1: Form Pengajuan Izin Mandiri -->
+    <section id="panel-izin" class="tab-panel active">
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">Formulir Izin / Sakit Mandiri</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+        Silakan isi data permohonan ketidakhadiran resmi. Data akan diverifikasi oleh wali kelas atau pengurus.
+      </p>
+
+      <form id="formIzin" onsubmit="submitIzin(event)">
+        <div class="form-group">
+          <label for="regNumber">Nomor Induk / Registrasi (NISN / No. Jemaat) *</label>
+          <input type="text" id="regNumber" class="form-control" placeholder="Contoh: 20241001 atau JMT-001" required>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Kategori Ketidakhadiran *</label>
+          <select id="category" class="form-control" required>
+            <option value="sakit">Sakit</option>
+            <option value="izin">Izin Kepentingan Keluarga</option>
+            <option value="dispensasi">Dispensasi Tugas / Lomba</option>
+            <option value="cuti">Cuti</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="startDate">Tanggal Mulai *</label>
+            <input type="date" id="startDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="endDate">Tanggal Selesai *</label>
+            <input type="date" id="endDate" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reason">Alasan / Penjelasan *</label>
+          <textarea id="reason" class="form-control" rows="3" placeholder="Jelaskan alasan izin secara jelas..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="attachmentUrl">Tautan Bukti / Surat Dokter (Opsional)</label>
+          <input type="url" id="attachmentUrl" class="form-control" placeholder="https://drive.google.com/... atau tautan gambar bukti">
+        </div>
+
+        <button type="submit" id="btnSubmitIzin" class="btn">
+          <span>Kirim Permohonan Izin</span>
+        </button>
+
+        <div id="alertIzin" class="alert"></div>
+      </form>
+    </section>
+
+    <!-- Panel 2: Pengecekan Riwayat Kehadiran Mandiri -->
+    <section id="panel-cek" class="tab-panel">
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">Cek Histori Presensi Mandiri</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+        Masukkan Nomor Induk untuk melihat rekapan presensi 30 sesi terakhir tanpa perlu login.
+      </p>
+
+      <form id="formCek" onsubmit="checkAttendance(event)">
+        <div class="form-group">
+          <label for="cekRegNumber">Nomor Induk / Registrasi (NISN / No. Jemaat)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="cekRegNumber" class="form-control" placeholder="Contoh: 20241001" required>
+            <button type="submit" id="btnCek" class="btn" style="width: auto; padding: 0 20px;">
+              Cari
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <div id="alertCek" class="alert"></div>
+
+      <!-- Result Container -->
+      <div id="resultContainer" style="display: none;">
+        <div class="profile-box">
+          <div class="profile-info">
+            <h3 id="resName">-</h3>
+            <p id="resDetails">NISN: - | Grup: -</p>
+          </div>
+          <span id="resTotal" class="badge-count">0 Catatan</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>Tipe</th>
+                <th>Status</th>
+                <th>Keterangan</th>
+              </tr>
+            </thead>
+            <tbody id="resTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-credit">
+      <p>Open Presensi v0.1 • Open Source Community Platform</p>
+    </div>
+  </main>
+
+  <script>
+    // Tab switcher
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+      if (tab === 'izin') {
+        document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+        document.getElementById('panel-izin').classList.add('active');
+        window.location.hash = 'izin';
+      } else {
+        document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+        document.getElementById('panel-cek').classList.add('active');
+        window.location.hash = 'cek';
+      }
+    }
+
+    // Set default dates
+    window.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('startDate').value = today;
+      document.getElementById('endDate').value = today;
+
+      if (window.location.hash === '#cek') {
+        switchTab('cek');
+      }
+    });
+
+    // Form Izin Submission
+    async function submitIzin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitIzin');
+      const alertBox = document.getElementById('alertIzin');
+      alertBox.style.display = 'none';
+
+      btn.disabled = true;
+      btn.innerText = 'Mengirim permohonan...';
+
+      const payload = {
+        registration_number: document.getElementById('regNumber').value.trim(),
+        category: document.getElementById('category').value,
+        start_date: document.getElementById('startDate').value,
+        end_date: document.getElementById('endDate').value,
+        reason: document.getElementById('reason').value.trim(),
+        attachment_url: document.getElementById('attachmentUrl').value.trim() || null
+      };
+
+      try {
+        const res = await fetch('/api/v1/public/leave-requests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alertBox.className = 'alert alert-success';
+          alertBox.innerHTML = `<strong>Permohonan Terkirim!</strong> Izin untuk <b>${data.member_name}</b> berhasil didaftarkan dengan status <b>Menunggu Persetujuan</b>.`;
+          alertBox.style.display = 'block';
+          document.getElementById('formIzin').reset();
+          const today = new Date().toISOString().split('T')[0];
+          document.getElementById('startDate').value = today;
+          document.getElementById('endDate').value = today;
+        } else {
+          alertBox.className = 'alert alert-danger';
+          alertBox.innerHTML = `<strong>Gagal:</strong> ${data.detail || 'Terjadi kesalahan sistem.'}`;
+          alertBox.style.display = 'block';
+        }
+      } catch (err) {
+        alertBox.className = 'alert alert-danger';
+        alertBox.innerHTML = `<strong>Kesalahan Jaringan:</strong> ${err.message}`;
+        alertBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Kirim Permohonan Izin';
+      }
+    }
+
+    // Check Attendance History
+    async function checkAttendance(e) {
+      e.preventDefault();
+      const reg = document.getElementById('cekRegNumber').value.trim();
+      const btn = document.getElementById('btnCek');
+      const alertBox = document.getElementById('alertCek');
+      const resultContainer = document.getElementById('resultContainer');
+      const tbody = document.getElementById('resTableBody');
+
+      alertBox.style.display = 'none';
+      resultContainer.style.display = 'none';
+      tbody.innerHTML = '';
+
+      btn.disabled = true;
+      btn.innerText = '...';
+
+      try {
+        const res = await fetch(`/api/v1/public/check-attendance?reg_number=${encodeURIComponent(reg)}`);
+        const data = await res.json();
+
+        if (res.ok) {
+          document.getElementById('resName').innerText = data.member_name;
+          document.getElementById('resDetails').innerText = `ID: ${data.registration_number} • Kelompok: ${data.group_name}`;
+          document.getElementById('resTotal').innerText = `${data.total_records} Kehadiran`;
+
+          if (data.history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 20px;">Belum ada catatan presensi.</td></tr>';
+          } else {
+            data.history.forEach(item => {
+              const tr = document.createElement('tr');
+              let badgeClass = 'status-hadir';
+              let statusText = item.status;
+              if (item.status === 'terlambat') {
+                badgeClass = 'status-terlambat';
+                statusText = `Terlambat (${item.late_minutes}m)`;
+              } else if (item.status === 'izin') {
+                badgeClass = 'status-izin';
+              } else if (item.status === 'sakit') {
+                badgeClass = 'status-sakit';
+              } else if (item.status === 'alpa') {
+                badgeClass = 'status-alpa';
+              }
+
+              tr.innerHTML = `
+                <td>${item.recorded_at}</td>
+                <td><span style="font-weight:600; text-transform: capitalize;">${item.record_type}</span></td>
+                <td><span class="status-pill ${badgeClass}">${statusText}</span></td>
+                <td><small style="color:var(--text-muted);">${item.notes || item.scan_method}</small></td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+
+          resultContainer.style.display = 'block';
+        } else {
+          alertBox.className = 'alert alert-danger';
+          alertBox.innerHTML = `<strong>Tidak Ditemukan:</strong> ${data.detail || 'Data anggota tidak ditemukan.'}`;
+          alertBox.style.display = 'block';
+        }
+      } catch (err) {
+        alertBox.className = 'alert alert-danger';
+        alertBox.innerHTML = `<strong>Kesalahan Jaringan:</strong> ${err.message}`;
+        alertBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Cari';
+      }
+    }
+  </script>
+</body>
+</html>

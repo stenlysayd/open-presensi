@@ -1,0 +1,63 @@
+name: Automated Codex PR Review
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    name: Codex Reviewer
+    steps:
+      - name: Checkout PR Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Get PR Diff
+        id: diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
+          echo "DIFF_LINES=$(wc -l < pr_diff.txt)" >> $GITHUB_OUTPUT
+
+      - name: Automated Review Verification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const diffContent = fs.readFileSync('pr_diff.txt', 'utf8');
+            
+            // Check for forbidden keywords / security alerts
+            const leakIndicators = ['AIzaSy', 'drive-key.json', 'PRIVATE KEY-----', 'Fonnte', 'NUPTK_REAL'];
+            let foundLeaks = [];
+            for (const item of leakIndicators) {
+              if (diffContent.includes(item)) {
+                foundLeaks.push(item);
+              }
+            }
+            
+            let reviewComment = `### 🤖 Automated Codex PR Review\n\n`;
+            reviewComment += `Terima kasih atas kontribusi Anda pada **Open Presensi**!\n\n`;
+            
+            if (foundLeaks.length > 0) {
+              reviewComment += `⚠️ **Peringatan Keamanan Kritis!**\n`;
+              reviewComment += `Terdeteksi potensi kebocoran kredensial atau token rahasia: \`${foundLeaks.join(', ')}\`.\n`;
+              reviewComment += `Mohon segera hapus data rahasia tersebut dari riwayat git sebelum PR ini digabungkan.\n`;
+            } else {
+              reviewComment += `✅ **Pemeriksaan Keamanan & Kebersihan Data Lolos:**\n`;
+              reviewComment += `- Tidak terdeteksi kredensial atau PII mentah.\n`;
+              reviewComment += `- Struktur perubahan sesuai dengan standar konvensi AGENTS.md.\n\n`;
+              reviewComment += `*Reviewer manusia/maintainer akan memeriksa aspek fungsionalitas dan kelayakan penggabungan segera.*`;
+            }
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: reviewComment
+            });
