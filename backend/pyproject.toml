@@ -1,0 +1,26 @@
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = [
+    "E501",  # line length
+    "E402",  # module level import not at top
+    "F401",  # unused imports in __init__
+    "E712",  # SQLAlchemy boolean comparison (Model.is_active == True)
+    "W293",  # blank line contains whitespace
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+pythonpath = [
+    ".",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]

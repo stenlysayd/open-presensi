@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
@@ -7,15 +8,22 @@ from app.core.database import engine, Base
 import app.models  # Import all models to ensure registration with Base
 from app.api.v1.api import api_router
 
-# Create database tables if not exist
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create database tables if not exist on server startup
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"Warning: Could not initialize database on startup: {e}")
+    yield
 
 app = FastAPI(
     title=settings.APP_NAME,
     description="Sistem Presensi dan Manajemen Komunitas Open Source untuk Sekolah & Gereja Kecil di Indonesia.",
     version="0.1.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # CORS Configuration for Flutter Web and Mobile
